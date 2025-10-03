@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Sphere, MeshDistortMaterial, Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -82,7 +82,7 @@ function GlowingSphere({ position, color }: { position: [number, number, number]
   );
 }
 
-export default function CinemaBackground() {
+const CinemaBackground = memo(function CinemaBackground() {
   return (
     <div className="fixed inset-0 -z-10">
       <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
@@ -104,4 +104,6 @@ export default function CinemaBackground() {
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
     </div>
   );
-}
+});
+
+export default CinemaBackground;

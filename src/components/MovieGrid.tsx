@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import MovieCard from './MovieCard';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,13 @@ interface Movie {
   rating: number;
 }
 
-export default function MovieGrid() {
+function MovieGrid() {
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [genreFilter, setGenreFilter] = useState<string>('all');
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
-  const fetchMovies = async () => {
+  const fetchMovies = useCallback(async () => {
     const { data } = await supabase
       .from('movies')
       .select('*')
@@ -30,11 +29,10 @@ export default function MovieGrid() {
 
     if (data) {
       setMovies(data);
-      setFilteredMovies(data);
     }
-  };
+  }, []);
 
-  const fetchUserRatings = async () => {
+  const fetchUserRatings = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -48,14 +46,14 @@ export default function MovieGrid() {
       data.forEach(r => ratingsMap[r.movie_id] = r.rating);
       setUserRatings(ratingsMap);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchMovies();
     fetchUserRatings();
-  }, []);
+  }, [fetchMovies, fetchUserRatings]);
 
-  useEffect(() => {
+  const filteredMovies = useMemo(() => {
     let filtered = movies;
 
     if (searchTerm) {
@@ -69,10 +67,10 @@ export default function MovieGrid() {
       filtered = filtered.filter(movie => movie.genre === genreFilter);
     }
 
-    setFilteredMovies(filtered);
+    return filtered;
   }, [searchTerm, genreFilter, movies]);
 
-  const genres = Array.from(new Set(movies.map(m => m.genre)));
+  const genres = useMemo(() => Array.from(new Set(movies.map(m => m.genre))), [movies]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,3 +117,5 @@ export default function MovieGrid() {
     </div>
   );
 }
+
+export default memo(MovieGrid);

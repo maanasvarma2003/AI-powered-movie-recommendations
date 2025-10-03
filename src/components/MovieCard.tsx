@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
@@ -19,12 +19,12 @@ interface MovieCardProps {
   onRatingChange?: () => void;
 }
 
-export default function MovieCard({ movie, userRating, onRatingChange }: MovieCardProps) {
+function MovieCard({ movie, userRating, onRatingChange }: MovieCardProps) {
   const [hoveredStar, setHoveredStar] = useState(0);
   const [currentRating, setCurrentRating] = useState(userRating || 0);
   const [loading, setLoading] = useState(false);
 
-  const handleRating = async (rating: number) => {
+  const handleRating = useCallback(async (rating: number) => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -51,7 +51,7 @@ export default function MovieCard({ movie, userRating, onRatingChange }: MovieCa
     } finally {
       setLoading(false);
     }
-  };
+  }, [movie.id, movie.title, onRatingChange]);
 
   return (
     <Card className="group overflow-hidden bg-card/60 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] animate-scale-in">
@@ -108,3 +108,5 @@ export default function MovieCard({ movie, userRating, onRatingChange }: MovieCa
     </Card>
   );
 }
+
+export default memo(MovieCard);

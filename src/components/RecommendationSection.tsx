@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,12 +15,12 @@ interface Movie {
   rating: number;
 }
 
-export default function RecommendationSection() {
+function RecommendationSection() {
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
-  const fetchUserRatings = async () => {
+  const fetchUserRatings = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -34,9 +34,9 @@ export default function RecommendationSection() {
       data.forEach(r => ratingsMap[r.movie_id] = r.rating);
       setUserRatings(ratingsMap);
     }
-  };
+  }, []);
 
-  const getRecommendations = async () => {
+  const getRecommendations = useCallback(async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -70,7 +70,7 @@ export default function RecommendationSection() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUserRatings();
@@ -130,3 +130,5 @@ export default function RecommendationSection() {
     </section>
   );
 }
+
+export default memo(RecommendationSection);

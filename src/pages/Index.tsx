@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Film, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,10 +24,10 @@ export default function Index() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
-  };
+  }, []);
 
   return (
     <div className="min-h-screen relative">
